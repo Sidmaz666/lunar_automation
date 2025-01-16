@@ -11,7 +11,7 @@ const {DEEPTALK_EMAIL, DEEPTALK_PASSWORD} = require("../config")
 
 class VideoService {
   constructor(user, config) {
-    if (!user || !user.niche || !user.accountType  || !user.email ) {
+    if (!user || !user.niches || !user.accountType  || !user.email ) {
       throw new Error(
         'Invalid user: Missing required "niche", "accountType" or "email" property.'
       );
@@ -31,7 +31,7 @@ class VideoService {
     try {
       const random_niche =  this.additionalConfig.niche ? 
 	this.additionalConfig.niche[Math.floor(Math.random() * this.additionalConfig.niche.length)] : 
-        this.user.niche[Math.floor(Math.random() * this.user.niche.length)];
+        this.user.niches[Math.floor(Math.random() * this.user.niches.length)];
       const content_idea_prompt = `Please Give me 10 to 20 unique creative content ideas for Instagram Reel and YouTube Shorts Video content based on the niche "${random_niche}". The content includes a video with images,subtitle and audio! So, please me considerate about it while generating the ideas, also ensure you do the followings:
 - Ensure to Analyze the latest ongoing trends related to the niche, to get relevant ideas.
 - Please provide a very context rich long detailed description of each ideas.
