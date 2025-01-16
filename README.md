@@ -2,6 +2,15 @@
 
 Lunar Automation is a robust Node.js-based solution designed to automate the creation and posting of engaging video content on Instagram. By leveraging cutting-edge AI technologies such as **Deepseek** for content generation, **Flux** for image creation, **TTSMP3** for text-to-speech conversion, and **FFmpeg** for video editing, Lunar Automation empowers users to produce high-quality, niche-specific videos with minimal manual intervention. The program utilizes a highly detailed JSON configuration to define video structure, ensuring a seamless and customizable content creation process.
 
+# Test Examples
+
+Account: <a href="https://instagram/lunar_automation">@lunar_automation</a>
+
+![image](https://github.com/user-attachments/assets/96573e51-3211-4a16-802a-b70491d930be)
+![image](https://github.com/user-attachments/assets/ab1d9c36-d760-4b94-bb0d-6c315ebd33ca)
+
+
+
 ---
 
 ## Key Features
