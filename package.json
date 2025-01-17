@@ -1,6 +1,6 @@
 {
     "scripts": {
-	"build": "npm install --production && npx browsers install chrome && npx rebrowser-patches@latest patch --packageName puppeteer-core",
+	"build": "npm install --production && npx rebrowser-patches@latest patch --packageName puppeteer-core",
         "start": "export NODE_NO_WARNINGS=1 && node src/app.js",
         "dev": "export NODE_NO_WARNINGS=1 && nodemon src/app.js"
     },

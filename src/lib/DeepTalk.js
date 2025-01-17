@@ -25,7 +25,7 @@ class DeepTalk {
     this.browser = await puppeteer.launch({
       headless: true,
       executablePath: require('puppeteer').executablePath(),
-      userDataDir: path.join(__dirname.split("/src")[0] + '/.cache', "userData"),
+      userDataDir: path.join(__dirname.split("/src")[0], '.cache', "userData"),
     });
     await (
       await this.browser.defaultBrowserContext()
@@ -275,5 +275,6 @@ class DeepTalk {
     }
   }
 }
+
 
 module.exports = DeepTalk;
