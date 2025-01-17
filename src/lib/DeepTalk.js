@@ -24,7 +24,8 @@ class DeepTalk {
   async initialize() {
     this.browser = await puppeteer.launch({
       headless: true,
-      userDataDir: path.join(__dirname, "userData"),
+      executablePath: require('puppeteer').executablePath(),
+      userDataDir: path.join(__dirname.split("/src")[0] + '/.cache', "userData"),
     });
     await (
       await this.browser.defaultBrowserContext()
@@ -133,7 +134,7 @@ class DeepTalk {
 
     // Test Chatting
     const textAreaSelector = "#chat-input";
-    await this.page.waitForSelector(textAreaSelector);
+    await this.page.waitForSelector(textAreaSelector, {timeout: 200000});
 
     await this.page
       .evaluate((text) => navigator.clipboard.writeText(text), message) // Copy text to clipboard
