@@ -1,6 +1,6 @@
 {
     "scripts": {
-        "patch": "npx rebrowser-patches@latest patch --packageName puppeteer-core",
+        "postinstall": "npm install && npx @puppeteer/browsers install chrome@stable && npx rebrowser-patches@latest patch --packageName puppeteer-core",
         "start": "export NODE_NO_WARNINGS=1 && node src/app.js",
         "dev": "export NODE_NO_WARNINGS=1 && nodemon src/app.js"
     },
