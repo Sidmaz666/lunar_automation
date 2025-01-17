@@ -24,7 +24,6 @@ class DeepTalk {
   async initialize() {
     this.browser = await puppeteer.launch({
       headless: true,
-      executablePath: require('puppeteer').executablePath(),
       userDataDir: path.join(__dirname.split("/src")[0], '.cache', "userData"),
     });
     await (
