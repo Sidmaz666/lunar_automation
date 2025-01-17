@@ -15,7 +15,6 @@
         "fs-extra": "^11.2.0",
         "instagram-private-api": "^1.46.1",
         "mongoose": "^8.9.5",
-        "node-cron": "^3.0.3",
         "node-mailer": "^0.1.1",
         "puppeteer-extra": "^3.3.6",
         "puppeteer-extra-plugin-stealth": "^2.11.2",

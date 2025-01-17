@@ -1,7 +1,6 @@
 const express = require("express");
 const crypto = require("crypto"); // For generating unique IDs
 const connectDB = require("./utils/db");
-const cronJobs = require("./utils/cronJobs");
 const logger = require("./utils/logger");
 const { MASTER_KEY } = require("./config");
 const VideoService = require("./lib/VideoService");
@@ -15,9 +14,6 @@ const events = new Map();
 
 // Connect to MongoDB
 connectDB();
-
-// Start cron jobs
-cronJobs();
 
 // Basic route to check if the server is running
 app.get("/", (_, res) => {
