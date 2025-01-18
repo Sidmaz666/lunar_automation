@@ -1,4 +1,0 @@
-1
-00:00:00,000 --> 00:00:06,432
-Kefka's room is a chaotic mess of colors and madness. <break time='1s'/> Perfect for a clown with a dark side.
-
