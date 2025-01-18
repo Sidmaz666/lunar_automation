@@ -1,0 +1,4 @@
+1
+00:00:00,000 --> 00:00:05,760
+Ardyn's bedroom is a mix of royalty and decay. <break time='1s'/> Would you rest in a king's fallen grace?
+

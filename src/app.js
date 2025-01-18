@@ -4,8 +4,11 @@ const connectDB = require("./utils/db");
 const logger = require("./utils/logger");
 const { MASTER_KEY } = require("./config");
 const VideoService = require("./lib/VideoService");
+const { cronJobs } = require("./lib/UserVideoService");
+const path = require("path");
 
 const app = express();
+app.use(express.static(path.join(__dirname.split("/src")[0], "public")));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
@@ -14,6 +17,8 @@ const events = new Map();
 
 // Connect to MongoDB
 connectDB();
+//Start the Cron Jobs
+cronJobs();
 
 // Basic route to check if the server is running
 app.get("/", (_, res) => {
@@ -24,7 +29,7 @@ app.get("/", (_, res) => {
   });
 });
 
-app.post("/generate_video", async (req, res) => {
+app.post("/generate/video", async (req, res) => {
   try {
     const { user, app_master_key, additionalConfig = {} } = req.body;
 
@@ -39,7 +44,11 @@ app.post("/generate_video", async (req, res) => {
     // Initialize VideoService with user and additionalConfig
     const videoService = new VideoService(user, additionalConfig);
     // Store the event in memory (for SSE logging)
-    events.set(eventId, { logs: [], status: "in_progress", clients: new Set() });
+    events.set(eventId, {
+      logs: [],
+      status: "in_progress",
+      clients: new Set(),
+    });
     // Respond with the event ID
     res.status(202).json({ eventId, message: "Video generation started." });
 
@@ -57,7 +66,101 @@ app.post("/generate_video", async (req, res) => {
 
             // Send the log to all connected clients
             event.clients.forEach((client) => {
-              client.write(`data: ${JSON.stringify({ message: logMessage })}\n\n`);
+              client.write(
+                `data: ${JSON.stringify({ message: logMessage })}\n\n`
+              );
+            });
+          }
+        };
+
+        // Generate the video
+        const videoData = await videoService.generateVideo();
+
+        // Restore original console.log
+        console.log = originalConsoleLog;
+
+        // Mark the event as completed
+        events.set(eventId, {
+          ...events.get(eventId),
+          status: "completed",
+          videoData,
+        });
+
+        // Notify all clients that the event is completed
+        const event = events.get(eventId);
+        event.clients.forEach((client) => {
+          client.write(
+            `data: ${JSON.stringify({
+              videoData,
+              message: "Video generation completed!",
+            })}\n\n`
+          );
+          client.end(); // Close the connection
+        });
+      } catch (error) {
+        logger.error(error);
+
+        // Mark the event as failed
+        events.set(eventId, {
+          ...events.get(eventId),
+          status: "failed",
+          error: error.message,
+        });
+
+        // Notify all clients that the event failed
+        const event = events.get(eventId);
+        event.clients.forEach((client) => {
+          client.write(`data: ${JSON.stringify({ error: error.message })}\n\n`);
+          client.end(); // Close the connection
+        });
+      }
+    })();
+  } catch (error) {
+    logger.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.post("/post/instagram", async (req, res) => {
+  try {
+    const { user, app_master_key, additionalConfig = {} } = req.body;
+
+    // Validate the master key and user
+    if (app_master_key !== MASTER_KEY || !user) {
+      return res
+        .status(401)
+        .json({ error: "Unauthorized! Invalid Master Key" });
+    }
+    // Generate a unique ID for this event
+    const eventId = crypto.randomUUID();
+    // Initialize VideoService with user and additionalConfig
+    const videoService = new VideoService(user, additionalConfig);
+    // Store the event in memory (for SSE logging)
+    events.set(eventId, {
+      logs: [],
+      status: "in_progress",
+      clients: new Set(),
+    });
+    // Respond with the event ID
+    res.status(202).json({ eventId, message: "Video generation started." });
+
+    // Start the video generation process (in the background)
+    (async () => {
+      try {
+        // Override console.log to capture logs for this event
+        const originalConsoleLog = console.log;
+        console.log = (...args) => {
+          originalConsoleLog(...args); // Keep original console.log functionality
+          const logMessage = args.join(" ");
+          const event = events.get(eventId);
+          if (event) {
+            event.logs.push(logMessage); // Store logs for this event
+
+            // Send the log to all connected clients
+            event.clients.forEach((client) => {
+              client.write(
+                `data: ${JSON.stringify({ message: logMessage })}\n\n`
+              );
             });
           }
         };
@@ -69,19 +172,32 @@ app.post("/generate_video", async (req, res) => {
         console.log = originalConsoleLog;
 
         // Mark the event as completed
-        events.set(eventId, { ...events.get(eventId), status: "completed", videoData });
+        events.set(eventId, {
+          ...events.get(eventId),
+          status: "completed",
+          videoData,
+        });
 
         // Notify all clients that the event is completed
         const event = events.get(eventId);
         event.clients.forEach((client) => {
-          client.write(`data: ${JSON.stringify({ videoData, message: "Video generation completed!" })}\n\n`);
+          client.write(
+            `data: ${JSON.stringify({
+              videoData,
+              message: "Video generation completed!",
+            })}\n\n`
+          );
           client.end(); // Close the connection
         });
       } catch (error) {
         logger.error(error);
 
         // Mark the event as failed
-        events.set(eventId, { ...events.get(eventId), status: "failed", error: error.message });
+        events.set(eventId, {
+          ...events.get(eventId),
+          status: "failed",
+          error: error.message,
+        });
 
         // Notify all clients that the event failed
         const event = events.get(eventId);
@@ -127,6 +243,35 @@ app.get("/events/:eventId", (req, res) => {
   req.on("close", () => {
     event.clients.delete(res); // Remove the client from the set
     res.end();
+  });
+});
+
+// 404 Handler for invalid routes
+app.use((_, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Resource not found",
+    error: {
+      code: 404,
+      description: "The requested resource does not exist.",
+    },
+  });
+});
+
+// Global error handler middleware
+app.use((err,_,res) => {
+  console.error("Error:", err.stack); // Log the error for debugging
+
+  const statusCode = err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
+
+  res.status(statusCode).json({
+    success: false,
+    message: message,
+    error: {
+      code: statusCode,
+      description: err.description || "An unexpected error occurred.",
+    },
   });
 });
 

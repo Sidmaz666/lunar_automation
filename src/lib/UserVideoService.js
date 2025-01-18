@@ -2,6 +2,7 @@ const User = require("../models/User");
 const VideoService = require("./VideoService");
 const logger = require("../utils/logger");
 const { TOGETHER_AI_API_KEY } = require("../config");
+const cron = require("node-cron");
 
 // Define user rules
 const userRules = {
@@ -145,8 +146,20 @@ const resetDailyUsageCount = async () => {
   logger.info("Daily usage counts reset.");
 };
 
+const cronJobs = () => {
+  // Video generation cron job (runs at specific intervals)
+  cron.schedule("0 10,14,18,22 * * *", runVideoServiceForAllUsers);
+  // Reset daily usage count at midnight
+  cron.schedule("0 0 * * *", resetDailyUsageCount);
+  // Reset monthly usage count at the start of each month
+  cron.schedule("0 0 1 * *", resetMonthlyUsageCount);
+};
+
 module.exports = {
 	runVideoServiceForAllUsers,
 	resetDailyUsageCount,
 	resetMonthlyUsageCount,
+  	cronJobs
 };
+
+

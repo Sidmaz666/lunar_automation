@@ -1,0 +1,4 @@
+1
+00:00:00,000 --> 00:00:06,048
+Ultimecia's bedroom is a blend of elegance and time magic. <break time='1s'/> Would you risk getting lost in time?
+

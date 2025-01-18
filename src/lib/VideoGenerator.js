@@ -27,7 +27,7 @@ class VideoGenerator {
     // Sanitize the video title to remove invalid characters
     this.sanitizedTitle = this.sanitizeFilename(jsonData.video.title);
     this.jsonData = jsonData;
-    this.videoDir = path.join(__dirname, "videos", this.sanitizedTitle);
+    this.videoDir =  path.join(__dirname.split("/src")[0], "public", "videos", this.sanitizedTitle);
     this.segmentsDir = path.join(this.videoDir, "segments");
     this.imagesDir = path.join(this.videoDir, "images");
     this.audioDir = path.join(this.videoDir, "audio");

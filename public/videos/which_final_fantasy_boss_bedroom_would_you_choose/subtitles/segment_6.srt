@@ -1,0 +1,4 @@
+1
+00:00:00,000 --> 00:00:04,752
+So, which bedroom would you choose? <break time='1s'/> Let us know in the comments!
+
